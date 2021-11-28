@@ -1,0 +1,85 @@
+dir.create("datos")
+dir.create("codigo")
+dir.create("firguras")
+
+install.packages("quanteda")
+update.packages(ask = FALSE)
+library(pdftools)
+library(tidytext)
+library(stringr)
+library(readr)
+library(tidyr)
+library(ggplot2)
+library(wordcloud)
+library(quanteda)
+library(quanteda.textplots)
+library(quanteda.textstats)
+library(syuzhet)
+library(ggplot2)
+library(tokenizers)
+library(SnowballC) # stemming: quedarnos con la raíz de una palabra
+library(udpipe) # etiquetado gramatical
+library(wordcloud)
+library(tidyverse)
+
+download.file("https://obtienearchivo.bcn.cl/obtienearchivo?id=recursoslegales/10221.3/46689/1/20180601.pdf",
+              destfile = "datos/discurso2018.pdf",
+              mode = "wb")
+
+discurso_2018 <- pdf_text("datos/discurso2018.pdf")
+
+str_count(discurso_2018, "MENSAJE PRESIDENCIAL")
+str_count(discurso_2018, "[:space:][:digit:]+\n")
+
+discurso_2018 <- discurso_2018 %>% 
+                  str_remove_all("MENSAJE PRESIDENCIAL") %>%  # Eliminar mensaje presidencial
+                  str_remove_all("1 DE JUNIO DE 2018") %>%    # Remover la fecha
+                  str_remove_all("[:space:][:digit:]+\n") %>% # Quitar los numeros de página
+                  .[5:32] %>% 
+                  paste(collapse = " ") %>% 
+                  str_replace_all("[:space:]{2,}", " ")
+
+# escribimos una copia del documento en un archivo de texto
+write_lines(discurso_2018, "datos/discurso_2018.txt")
+
+discurso_2018
+View(discurso_2018)
+
+# Cargar las stopwords desde 7 Partidas Digital
+unas_stopwords <- read_csv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/vacias.txt")
+# Cargar stopwords 
+otras_stopwords <- tibble(palabra = c("mil", "miles", "ciento", "cientos", "millón", "millones", "pesos", "dólares"))
+
+frecuencias <- tibble(discurso = discurso_2018) %>% 
+  unnest_tokens(
+                output = palabra,
+                input = discurso, 
+                strip_numeric = T
+                ) %>% 
+  count(palabra, sort = T) %>% 
+  anti_join(unas_stopwords) %>% 
+  anti_join(otras_stopwords)
+
+
+# Ejercicio 1.1: 
+# veamos las 10 palabras más frecuentes: gráfico de barra
+frecuencias %>% 
+  slice_max(n, n = 15) %>% 
+  ggplot(aes(y = reorder(palabra, n), n)) +
+  geom_col(fill = "#E9967A") + # por nombre o código hexadecimal
+  labs(x = "frecuencia",
+       y = NULL,
+       title = "Palabras más frecuentes del mensaje presidencial 2018",
+       subtitle = "Discurso del presidente Sebastián Piñera") +
+  theme_minimal()
+
+# Ejercicio 1.2: 
+# Extraer las 15 raices mas frecuentes
+
+
+
+
+
+
+
+
