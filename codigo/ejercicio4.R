@@ -19,17 +19,17 @@ polaridad_programa <- programa %>%
                         get_sentiment(method = "nrc", language="spanish")
 
 
-head(polaridad_programa,40)
+
 unas_stopwords <- read_csv("https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/vacias.txt")
 sentimientos <- read_tsv('https://raw.githubusercontent.com/7PartidasDigital/AnaText/master/datos/diccionarios/sentimientos_2.txt') %>% 
   filter(lexicon == "nrc") %>% 
   select(palabra, sentimiento)
 
-
 #Ejercicio 4.1
 tibble(indice = 1:length(polaridad_programa), polaridad = polaridad_programa) %>% 
   ggplot(aes(indice,polaridad )) + 
   geom_line()
+ggsave("./figuras/4-1_linea_sentimientos.png")
 
 frecuencia_sentimientos <- tibble(texto = programa) %>% 
                               unnest_tokens(input = texto,                                             
@@ -46,7 +46,7 @@ frecuencia_sentimientos %>% filter(sentimiento %in% c("positivo", "negativo")) %
   geom_col() +
   facet_wrap(~sentimiento, scales = "free") + 
   labs(y = NULL)
-
+ggsave("./figuras/4-2_palabras_sentimientos.png")
 
 library(udpipe)
 # 4.3 
@@ -70,6 +70,7 @@ frecuencia_sentimientos_lemas %>% filter(sentimiento %in% c("positivo", "negativ
   geom_col() +
   facet_wrap(~sentimiento, scales = "free") + 
   labs(y = NULL)
+ggsave("./figuras/4-3_lemmas-sentimiento.png")
 
 
 
@@ -84,6 +85,7 @@ frecuencia_sentimientos_lemas %>%
   geom_col(show.legend = F) +
   facet_wrap(~sentimiento, scales = "free") + 
   labs(y = NULL)
+ggsave("./figuras/4-4_10_lemas_sentimientos.png")
 
 
 
